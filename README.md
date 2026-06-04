@@ -132,14 +132,16 @@ const result = await retrier.execute(myFlakeyCall);
 ## Where This Fits
 
 ```
-AI-systems-evolution   ← rung 03 (agent needs reliable LLM calls)
+AI-systems-evolution   ← start here (rung 03: agent needs reliable LLM calls)
     |
-    └─► agentic-patterns  ← Pattern 02: multi-provider routing theory
+    └─► agentic-patterns  ← Pattern 02 (multi-provider routing theory)
             |
             └─► Agent-Routing  ← THIS REPO (runnable production router)
 ```
 
-For the full production stack: see **agentkernel**.
+For the full production stack: see [agentkernel](https://github.com/shubham0086/agentkernel).
+
+**Theory companion:** [Pattern 02: Multi-Provider LLM Routing](https://github.com/shubham0086/agentic-patterns/blob/main/docs/02-multi-provider-llm-routing.md)
 
 ---
 
