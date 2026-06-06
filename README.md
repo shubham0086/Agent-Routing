@@ -1,5 +1,9 @@
 # Agent-Routing
 
+> **IMPORTANT**: This repository contains real, production-ready, battle-tested code extracted directly from active commercial systems (like Agency OS or Founder Growth OS), rather than simplified mock learning artifacts.
+>
+> For project walkthroughs, architecture flowcharts, and system context, visit the live landing page: [shubham0086.github.io/MyPortfolio.github.io/projects/agent-routing.html](https://shubham0086.github.io/MyPortfolio.github.io/projects/agent-routing.html)
+
 **Your agent keeps working when OpenAI goes down, your quota runs out, or a model gets deprecated.**
 
 Agent-Routing is a multi-provider LLM router with per-task fallback chains, session-level circuit breakers, token optimization, and prompt injection guardrails. It routes each request down a priority chain until one succeeds, and marks failed providers down for the rest of the session.
