@@ -84,7 +84,10 @@ const router = new Router({
 
 No keys provided? Router defaults to Ollama automatically.
 
-### `router.chat(prompt, systemPrompt, taskClass, temperature, maxTokens, budget)`
+### `router.chat(prompt, systemPrompt, taskClass, temperature, maxTokens, budget, jsonMode)`
+
+`jsonMode` defaults to `true` (enforces JSON output, for agent pipelines). Pass `false`
+for plain-text/prose answers (chatbots, summaries, free text).
 
 ```js
 const result = await router.chat(
@@ -92,6 +95,9 @@ const result = await router.chat(
   'You are a senior engineer',
   'code'   // picks the code fallback chain
 );
+
+// Prose answer (no JSON enforcement):
+const reply = await router.chat(question, systemPrompt, 'content', 0.2, 512, null, false);
 
 console.log(result.provider);  // which provider answered
 console.log(result.model);     // which model answered
@@ -128,7 +134,7 @@ const result = await retrier.execute(myFlakeyCall);
 |----------|--------|-------------|
 | OpenAI | gpt-4o-mini, gpt-4o | `OPENAI_API_KEY` |
 | Anthropic | claude-3-5-haiku, claude-3-5-sonnet | `ANTHROPIC_API_KEY` |
-| Gemini | gemini-1.5-flash, gemini-2.0-flash, gemini-1.5-pro | `GEMINI_API_KEY` |
+| Gemini | gemini-2.5-flash, gemini-2.0-flash | `GEMINI_API_KEY` |
 | Ollama | qwen2.5-coder:7b (any local model) | none (free, local) |
 
 ---

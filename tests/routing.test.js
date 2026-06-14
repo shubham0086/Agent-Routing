@@ -2,6 +2,7 @@
 import { CircuitBreaker, RetryWithBackoff, getProviderBreaker } from '../src/CircuitBreaker.js';
 import { Guardrails, GuardrailError } from '../src/Guardrails.js';
 import { TokenOptimizer } from '../src/TokenOptimizer.js';
+import { Router } from '../src/Router.js';
 
 let passed = 0, failed = 0;
 
@@ -68,6 +69,37 @@ const compressed = opt.optimizePrompt('In order to basically understand this, du
 assert(!compressed.includes('in order to'), 'Filler phrase removed');
 assert(!compressed.includes('basically'), 'Filler word removed');
 assert(opt.estimateTokens('hello world') > 0, 'Token estimate positive');
+
+console.log('\nTest 8: Router - prose mode skips JSON wrapping');
+const router = new Router();
+const jsonWrapped = router._wrapSystemPrompt('gemini', 'gemini-2.5-flash', 'You are helpful', true);
+assert(jsonWrapped.includes('valid JSON'), 'jsonMode=true enforces JSON (unchanged default)');
+const prose = router._wrapSystemPrompt('gemini', 'gemini-2.5-flash', 'You are helpful', false);
+assert(prose === 'You are helpful', 'jsonMode=false returns the prompt unchanged (prose)');
+assert(router.modelChains.gemini[0] === 'gemini-2.5-flash', 'Gemini chain leads with current model');
+
+console.log('\nTest 9: Router - OpenAI-compatible providers registered');
+const compatRouter = new Router({ nvidia: 'nv-key', gemini: 'gm-key' });
+assert(
+  JSON.stringify(compatRouter.providerChains.chat) ===
+    JSON.stringify(['nvidia', 'groq', 'opencode', 'openrouter', 'gemini']),
+  'chat chain = free providers first, Gemini last'
+);
+assert(compatRouter.modelChains.nvidia[0] === 'meta/llama-3.3-70b-instruct', 'NVIDIA NIM has a default model');
+assert(compatRouter._providerAvailable('nvidia') === true, 'nvidia available when key present');
+assert(compatRouter._providerAvailable('groq') === false, 'groq unavailable when key absent');
+assert(compatRouter._providerAvailable('gemini') === true, 'gemini available as last-resort fallback');
+
+console.log('\nTest 10: Router - generation fails over past a dead free provider');
+const foRouter = new Router({ nvidia: 'nv-key', groq: 'gq-key' });
+// Simulate nvidia down, groq healthy — without touching the network.
+foRouter._dispatchCall = async (provider) => {
+  if (provider === 'nvidia') throw new Error('nvidia HTTP 429: rate limited');
+  return { content: 'answer from ' + provider, inputTokens: 10, outputTokens: 5 };
+};
+const foResult = await foRouter.chat('hi', '', 'chat', 0, 64, null, false);
+assert(foResult.provider === 'groq', 'fails over from nvidia to groq');
+assert(foResult.content === 'answer from groq', 'returns the surviving provider\'s answer');
 
 console.log(`\n${'─'.repeat(40)}`);
 console.log(`Tests passed: ${passed}`);
